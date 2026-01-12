@@ -1,0 +1,690 @@
+/* Theme variables are defined in `src/index.css` (single source of truth) */
+*{ box-sizing: border-box; }
+body{
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.uiPage{
+  display: grid;
+  gap: 10px;
+}
+
+.uiCard{
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+
+.uiCard:hover{ transform: translateY(-4px); }
+
+.uiCardPad{ padding: 20px; }
+.uiCardCompact{ padding: 12px; }
+
+.uiHeader{
+  display:flex;
+  align-items:center; /* center for a cleaner header */
+  justify-content:space-between;
+  gap: 18px;
+}
+
+.uiTitle{
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.uiSubtitle{
+  margin-top: 6px;
+  color: rgba(15,23,42,0.72); /* slightly higher contrast */
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.uiToolbar{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.uiInput, .uiSelect{
+  height: 44px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--text);
+  outline: none;
+  font-weight: 800;
+  min-width: 220px;
+}
+
+/* Small action buttons used in tables */
+.uiBtn.uiBtnSmall{ height: 36px; padding: 0 12px; font-size: 13px; border-radius: 10px; font-weight:800; white-space: nowrap; min-width: 140px; }
+.uiActions .uiBtn{ padding: 8px 12px; height: 36px; }
+.uiActions .uiBtn.uiBtnDanger{ padding: 8px 12px; height: 36px; }
+
+/* Large primary CTAs (used on booking flow) */
+.uiBtn.uiBtnLarge{ padding: 10px 18px; height: 46px; border-radius: 14px; font-weight: 900; min-width: 110px; }
+.uiBtn.uiBtnPrimary.uiBtnLarge{ background: var(--primary); box-shadow: 0 10px 30px rgba(37,99,235,.12); }
+
+.uiInput:focus, .uiSelect:focus{
+  border-color: rgba(37, 99, 235, .45);
+  box-shadow: 0 0 0 4px rgba(37,99,235,.10);
+}
+.uiInput:disabled, .uiSelect:disabled{ opacity: 0.65; cursor: not-allowed; }
+
+/* Button focus states */
+.uiBtn:focus{ outline: none; box-shadow: 0 0 0 6px rgba(37,99,235,.08); }
+.uiBtnPrimary:focus{ box-shadow: 0 6px 22px rgba(37,99,235,.16); }
+
+
+.uiBtn{
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #fff;
+  font-weight: 900;
+  cursor: pointer;
+  transition: 120ms ease;
+}
+
+.uiBtn:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(15,23,42,.06);
+}
+
+.uiBtnPrimary{
+  background: var(--primary);
+  border-color: rgba(37,99,235,.35);
+  color: #fff;
+}
+.uiBtnPrimary:hover{ background: var(--primary2); }
+
+.uiBtnDanger{
+  color: #fff;
+  background: var(--danger);
+  border-color: rgba(220,38,38,.35);
+}
+
+.uiPill{
+  display:inline-flex;
+  align-items:center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+  font-weight: 900;
+  font-size: 12px;
+}
+
+.uiActions{
+  display:flex;
+  gap: 8px;
+  justify-content:flex-end;
+}
+
+.uiTableWrap{
+  overflow:auto;
+  border-radius: var(--radius);
+}
+
+.uiTable{
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+}
+
+.uiTable thead th{
+  text-align: left;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 900;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel-2);
+}
+
+.uiTable tbody td{
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+/* subtle zebra striping + hover (toned down) */
+.uiTable tbody tr:nth-child(even){ background: #fff; }
+.uiTable tbody tr:nth-child(odd){ background: rgba(15,23,42,0.02); }
+.uiTable tbody tr:hover{
+  background: rgba(37,99,235,0.04); /* subtle blue hover */
+}
+.uiTable tbody td:first-child{ font-weight: 800; }
+
+
+/* Form grid in modals */
+.uiGrid2{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+@media (max-width: 860px){
+  .uiGrid2{ grid-template-columns: 1fr; }
+  .uiInput,.uiSelect{ min-width: 100%; }
+}
+
+/* Mobile table stacking */
+@media (max-width: 720px){
+  .uiTable{ min-width: 0; }
+  .uiTable thead{ display: none; }
+  .uiTable tbody tr{ display: grid; grid-template-columns: 1fr; gap: 8px; padding: 12px; border-bottom: 1px solid var(--border); background: transparent; }
+  .uiTable tbody td{ display: flex; justify-content: space-between; padding: 8px 6px; border-bottom: none; }
+  .uiTable tbody td::before{ content: attr(data-label); color: var(--muted); font-weight: 700; margin-right: 8px; }
+  .uiActions{ justify-content: flex-end; gap: 8px; }
+  .uiActions .uiBtn{ width: auto; }
+  .uiActions{ display:flex; }
+  .uiBtn.uiBtnSmall{ padding: 8px 10px; font-size: 13px; }
+}
+
+/* Modal */
+.uiModalOverlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding: 18px;
+  z-index: 50;
+  backdrop-filter: blur(3px);
+}
+
+.uiModal{
+  width: min(720px, 100%);
+  background: #fff;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.6);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  transform: translateY(8px) scale(.995);
+  opacity: 0;
+  animation: modalIn 160ms ease forwards;
+}
+@keyframes modalIn{
+  to{ transform: translateY(0) scale(1); opacity: 1; }
+}
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .uiModal { animation: none !important; transform: none !important; }
+  .uiCard, .uiBtn { transition: none !important; }
+}
+
+.uiModalHeader .uiIconBtn{ border-radius: 8px; padding: 6px 8px; }
+.uiModalHeader .uiIconBtn:focus{ box-shadow: 0 0 0 6px rgba(37,99,235,.08); }
+
+/* Focus-visible helpers */
+:focus { outline: none; }
+:focus-visible{ outline: none; }
+
+.uiBtn:focus-visible, .navLink:focus-visible, .uiInput:focus-visible, .uiSelect:focus-visible { box-shadow: 0 0 0 6px rgba(37,99,235,.08); border-color: rgba(37,99,235,.45); }
+
+/* Screen-reader only */
+.sr-only{
+  position: absolute !important;
+  height: 1px; width: 1px; overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px); white-space: nowrap; border: 0; padding: 0; margin: -1px;
+}
+
+/* Reveal when focused (useful for skip links) */
+.sr-only-focusable:active, .sr-only-focusable:focus {
+  position: static !important;
+  height: auto; width: auto; overflow: visible;
+  clip: auto; white-space: normal; margin: 0; padding: 6px 12px; border-radius: 8px; background: #fff; box-shadow: 0 6px 20px rgba(2,6,23,.08); z-index: 1000;
+}
+
+/* Button micro-interaction tweaks */
+.uiBtn{ transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease; }
+.uiBtn:active{ transform: translateY(0); }
+
+
+.uiModalHeader{
+  padding: 14px 16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(var(--panel), var(--panel-2));
+}
+
+.uiModalTitle{
+  font-weight: 1000;
+  letter-spacing: -0.02em;
+}
+
+.uiModalBody{
+  padding: 16px;
+}
+
+.uiModalFooter{
+  padding: 14px 16px;
+  display:flex;
+  justify-content:flex-end;
+  gap: 10px;
+  border-top: 1px solid var(--border);
+  background: var(--panel-2);
+}
+
+.uiIconBtn{
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #fff;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+/* =========================
+   WEEK VIEW (Calendar Grid)
+   ========================= */
+
+.weekCard {
+  overflow: hidden;
+}
+
+.weekToolbarTitle {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.weekWrap {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: #fff;
+  overflow: hidden;
+}
+
+/* scroll container */
+.weekScroll {
+  overflow: auto;
+  max-height: calc(100vh - 240px); /* keeps it usable */
+}
+
+/* Grid layout */
+.weekGrid {
+  min-width: 1080px;
+  display: grid;
+  grid-template-columns: 110px repeat(7, minmax(150px, 1fr));
+}
+
+/* Sticky header row */
+.weekHead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--panel-2);
+  border-bottom: 1px solid var(--border);
+}
+
+/* Sticky time column */
+.weekTimeCol {
+  position: sticky;
+  left: 0;
+  z-index: 11;
+  background: var(--panel-2);
+  border-right: 1px solid var(--border);
+}
+
+.weekHeadCell {
+  padding: 14px 14px;
+  font-weight: 900;
+  border-left: 1px solid var(--border);
+}
+
+.weekHeadCell:first-child {
+  border-left: none;
+}
+
+.weekHeadDayTop {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.weekHeadDayName {
+  font-weight: 950;
+  letter-spacing: -0.01em;
+}
+
+.weekHeadDayDate {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+/* Today highlight */
+.weekTodayBadge {
+  font-size: 11px;
+  font-weight: 900;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid #bfdbfe;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+/* Rows */
+.weekRowTime {
+  padding: 14px 14px;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 900;
+  border-bottom: 1px solid var(--border);
+  background: #fff;
+}
+
+.weekCell {
+  height: 70px;
+  border-left: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: #fff;
+  position: relative;
+}
+
+.weekCell:hover {
+  background: #fbfdff;
+}
+
+/* subtle hour line */
+.weekCell::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: rgba(15, 23, 42, 0.04);
+}
+
+/* Appointment chip */
+.apptChip {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%);
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.06);
+  cursor: pointer;
+  transition: transform 0.08s ease, box-shadow 0.2s ease;
+}
+
+.apptChip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 26px rgba(15, 23, 42, 0.10);
+}
+
+.apptTime {
+  font-size: 12px;
+  font-weight: 950;
+  color: #1d4ed8;
+}
+
+.apptName {
+  margin-top: 2px;
+  font-size: 14px;
+  font-weight: 950;
+  letter-spacing: -0.01em;
+  color: #0f172a;
+}
+
+.apptService {
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+/* Small screens */
+@media (max-width: 900px) {
+  .weekScroll {
+    max-height: none;
+  }
+}
+
+/* =========================
+   PREMIUM PAGE LAYOUT
+   ========================= */
+
+.uiPage{
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 18px;
+  gap: 14px;
+}
+
+body{
+  /* soft gradient background instead of flat */
+  background:
+    radial-gradient(900px 400px at 20% 0%, rgba(37,99,235,.10), transparent 60%),
+    radial-gradient(900px 400px at 80% 10%, rgba(34,197,94,.08), transparent 55%),
+    var(--bg);
+}
+
+/* Make cards feel “layered” */
+.uiCard{
+  border: 1px solid rgba(15,23,42,.08);
+  box-shadow: 0 14px 40px rgba(2,6,23,.06);
+}
+
+/* Keep hover but reduce “jumpiness” */
+.uiCard:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 18px 55px rgba(2,6,23,.09);
+}
+
+/* nicer header spacing */
+.uiHeader{
+  align-items: flex-start;
+}
+
+/* nicer sub text – use your theme muted if available */
+.uiSubtitle{
+  color: var(--muted);
+  max-width: 60ch;
+}
+
+/* =========================
+   AVAILABILITY TABLE UPGRADE
+   ========================= */
+
+.uiTableWrap{
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+/* sticky header */
+.uiTable thead th{
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: linear-gradient(var(--panel), var(--panel-2));
+}
+
+/* day label stronger */
+.uiTable tbody td:first-child strong{
+  font-size: 15px;
+}
+
+/* Better checkbox */
+.uiCheck{
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+/* Inputs inside table should feel compact + consistent */
+.uiTable .uiInput{
+  height: 42px;
+  border-radius: 14px;
+  padding: 10px 12px;
+}
+
+/* breaks indicator */
+.uiBreakBadge{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(37,99,235,.18);
+  background: rgba(37,99,235,.06);
+  font-weight: 900;
+  font-size: 12px;
+}
+
+/* action area alignment */
+.uiActions{
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* keep actions tighter on desktop */
+.uiActions .uiBtnSmall{
+  min-width: 150px;
+}
+
+/* =========================
+   BOOKING FLOW UPGRADE
+   ========================= */
+
+/* Make top card look like a “hero panel” */
+.uiHero{
+  background:
+    radial-gradient(700px 260px at 10% 0%, rgba(37,99,235,.10), transparent 60%),
+    linear-gradient(var(--panel), var(--panel-2));
+}
+
+/* Stepper (remove inline styles) */
+.stepperRow{
+  margin-top: 14px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.stepperLine{
+  height: 1px;
+  flex: 1;
+  background: var(--border);
+}
+
+/* Step pill button */
+.stepPill{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 999px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  background: #fff;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease, border-color 120ms ease;
+}
+.stepPill:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(2,6,23,.08);
+}
+.stepPillActive{
+  border: 2px solid rgba(37,99,235,.55);
+  background: rgba(37,99,235,.06);
+}
+.stepPillDone{
+  border: 2px solid rgba(34,197,94,.35);
+  background: rgba(34,197,94,.08);
+}
+.stepDot{
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  font-weight: 900;
+}
+.stepDotActive{
+  background: var(--primary);
+  color: #fff;
+  border-color: rgba(37,99,235,.35);
+}
+
+/* Service cards should feel like selectable tiles, not “buttons” */
+.serviceGrid{
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 12px;
+}
+
+.serviceCard{
+  text-align: left;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: #fff;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease, background 120ms ease;
+}
+.serviceCard:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 14px 34px rgba(2,6,23,.10);
+}
+.serviceCardActive{
+  border: 2px solid rgba(37,99,235,.55);
+  background: rgba(37,99,235,.06);
+}
+.serviceName{
+  font-weight: 950;
+  font-size: 15px;
+}
+.serviceMeta{
+  margin-top: 8px;
+  color: var(--muted);
+  font-weight: 800;
+  font-size: 13px;
+}
+
+/* Time slots as “chips” */
+.slotGrid{
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+  gap: 10px;
+}
+.slotChip{
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: #fff;
+  font-weight: 950;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease, border-color 120ms ease;
+}
+.slotChip:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 12px 26px rgba(2,6,23,.08);
+}
+.slotChipActive{
+  border: 2px solid rgba(37,99,235,.55);
+  background: rgba(37,99,235,.08);
+}
