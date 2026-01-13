@@ -4,10 +4,17 @@ import { useNavigate } from "react-router-dom";
 import "../components/ui/ui.css";
 import { useCustomerAuth } from "../features/customers/CustomerAuthProvider";
 
+function getInitials(name = "") {
+  const parts = String(name).trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return "C";
+  const first = parts[0]?.[0] || "";
+  const last = parts.length > 1 ? parts[parts.length - 1]?.[0] : "";
+  return (first + last).toUpperCase() || "C";
+}
+
 export default function Account() {
   const navigate = useNavigate();
 
-  // Customer auth API (from your CustomerAuthProvider)
   const {
     login,
     register,
@@ -16,22 +23,18 @@ export default function Account() {
     logout,
     current,
     loading,
-    authState, // if your provider exposes it; safe if unused in older versions
+    authState,
   } = useCustomerAuth();
 
-  // Tabs: login | signup | forgot | reset | profile
   const [tab, setTab] = useState("login");
 
-  // Form fields
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // Reset fields
   const [resetCode, setResetCode] = useState("");
 
-  // UI state
   const [err, setErr] = useState("");
   const [info, setInfo] = useState("");
 
@@ -43,7 +46,6 @@ export default function Account() {
     }
   }, [current, authState]);
 
-  // Keep UI in sync with auth
   useEffect(() => {
     setErr("");
     setInfo("");
@@ -58,7 +60,6 @@ export default function Account() {
       setPassword("");
       setResetCode("");
     } else {
-      // If logged out, default back to login tab
       setTab("login");
       setPassword("");
       setResetCode("");
@@ -80,7 +81,6 @@ export default function Account() {
 
     const e1 = normalizeEmail(email);
 
-    // If user typed admin username here, route them correctly
     if (!e1.includes("@")) {
       goAdminLogin();
       return;
@@ -93,7 +93,6 @@ export default function Account() {
 
     try {
       await login(e1, password);
-      // Customer side after login
       navigate("/book", { replace: true });
     } catch (e2) {
       setErr(e2?.message || "Login failed");
@@ -127,7 +126,6 @@ export default function Account() {
         phone: (phone || "").trim(),
         password,
       });
-      // Customer side after signup
       navigate("/book", { replace: true });
     } catch (e2) {
       setErr(e2?.message || "Sign up failed");
@@ -147,7 +145,6 @@ export default function Account() {
     }
 
     try {
-      // In your demo flow this may return a code string
       const code = await requestReset(e1);
       setInfo(
         code
@@ -206,6 +203,8 @@ export default function Account() {
     navigate("/account", { replace: true });
   }
 
+  const initials = getInitials(customer?.name || name);
+
   return (
     <div className="authPage">
       <div className="authCard">
@@ -224,8 +223,9 @@ export default function Account() {
               </div>
             </div>
 
-            <div className="authBadge" aria-hidden="true">
-              👤
+            {/* nicer badge */}
+            <div className="authBadge" aria-hidden="true" style={{ fontWeight: 950 }}>
+              {initials}
             </div>
           </div>
         </div>
@@ -234,28 +234,32 @@ export default function Account() {
           {err && <div className="authNotice danger">{err}</div>}
           {info && <div className="authNotice ok">{info}</div>}
 
-          {/* If logged in, show profile */}
+          {/* PROFILE */}
           {customer ? (
-            <div>
-              <div style={{ fontWeight: 950, fontSize: 14, marginBottom: 10 }}>
-                Signed in
+            <div className="authProfileWrap">
+              <div className="authProfileTop">
+                <div className="authProfileTitle">Signed in</div>
+                <span className="uiPill">Customer</span>
               </div>
 
-              <div className="uiCard uiCardCompact" style={{ marginBottom: 12 }}>
-                <div style={{ display: "grid", gap: 8 }}>
-                  <div>
-                    <strong>Name:</strong> {customer.name || "—"}
-                  </div>
-                  <div>
-                    <strong>Email:</strong> {customer.email || "—"}
-                  </div>
-                  <div>
-                    <strong>Phone:</strong> {customer.phone || "—"}
-                  </div>
+              <div className="authProfileCard">
+                <div className="authKV">
+                  <div className="authK">Name</div>
+                  <div className="authV">{customer.name || "—"}</div>
+                </div>
+
+                <div className="authKV">
+                  <div className="authK">Email</div>
+                  <div className="authV">{customer.email || "—"}</div>
+                </div>
+
+                <div className="authKV">
+                  <div className="authK">Phone</div>
+                  <div className="authV">{customer.phone || "—"}</div>
                 </div>
               </div>
 
-              <div className="authActions">
+              <div className="authActions" style={{ marginTop: 12 }}>
                 <button
                   type="button"
                   className="authPrimaryBtn"
@@ -263,6 +267,7 @@ export default function Account() {
                 >
                   Go to booking
                 </button>
+
                 <button type="button" className="authSecondaryBtn" onClick={onSignOut}>
                   Sign out
                 </button>

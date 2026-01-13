@@ -285,3 +285,56 @@ input[type="time"]{
   background: rgba(34,197,94,.08);
   color: rgba(4,120,87,.95);
 }
+
+/* =========================
+   SIGNED-IN PROFILE PANEL
+   ========================= */
+.authProfileWrap{
+  display: grid;
+  gap: 10px;
+}
+
+.authProfileTop{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.authProfileTitle{
+  font-weight: 950;
+  letter-spacing: -0.01em;
+  color: rgba(15,23,42,.92);
+}
+
+.authProfileCard{
+  border-radius: 16px;
+  border: 1px solid rgba(15,23,42,.08);
+  background: rgba(255,255,255,.80);
+  box-shadow: 0 12px 28px rgba(2,6,23,.06);
+  padding: 14px;
+}
+
+.authKV{
+  display:grid;
+  grid-template-columns: 120px 1fr;
+  gap: 10px;
+  padding: 10px 8px;
+  border-radius: 12px;
+}
+
+.authKV + .authKV{
+  border-top: 1px solid rgba(15,23,42,.06);
+}
+
+.authK{
+  font-size: 12px;
+  font-weight: 900;
+  color: rgba(15,23,42,.55);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.authV{
+  font-weight: 900;
+  color: rgba(15,23,42,.92);
+}
