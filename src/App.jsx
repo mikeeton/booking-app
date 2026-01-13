@@ -1,3 +1,4 @@
+// src/App.jsx
 import { Routes, Route, Navigate } from "react-router-dom";
 
 import AdminLayout from "./layouts/AdminLayout";
@@ -10,11 +11,10 @@ import Availability from "./pages/admin/Availability";
 import Book from "./pages/Book";
 import Account from "./pages/Account";
 import Login from "./pages/Login";
+import MyBookings from "./pages/MyBookings";
 
 import ProtectedRoute from "./features/auth/ProtectedRoute";
-
-// OPTIONAL: if you want booking to require customer login
-// import CustomerProtectedRoute from "./features/customers/CustomerProtectedRoute";
+import CustomerProtectedRoute from "./features/customers/CustomerProtectedRoute";
 
 export default function App() {
   return (
@@ -30,15 +30,11 @@ export default function App() {
         <Route path="/account" element={<Account />} />
         <Route path="/login" element={<Login />} />
 
-        {/* Customer booking (open) */}
-        <Route path="/book" element={<Book />} />
-
-        {/* OPTIONAL: Booking requires customer login */}
-        {/*
+        {/* ✅ Customer protected area */}
         <Route element={<CustomerProtectedRoute />}>
           <Route path="/book" element={<Book />} />
+          <Route path="/my-bookings" element={<MyBookings />} />
         </Route>
-        */}
 
         {/* ✅ Protected Admin */}
         <Route element={<ProtectedRoute />}>

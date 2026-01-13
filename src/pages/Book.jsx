@@ -1,7 +1,7 @@
 // src/pages/Book.jsx
 import { useMemo, useState, useEffect } from "react";
 import "../components/ui/ui.css";
-import { isAuthed } from "../features/auth/authStore";
+
 
 import { getServices } from "../features/services/servicesStore";
 import { getAppointments, createAppointment } from "../features/appointments/appointmentsStore";
@@ -243,6 +243,16 @@ export default function Book() {
       const startISO = slotISO;
       const endISO = addMins(startISO, Number(selectedService.durationMins || 30));
 
+      //  Double-booking protection (re-check at confirm time)
+const existing = getAppointments()
+  .filter((a) => (a.status || "confirmed") !== "cancelled");
+
+const taken = existing.some((a) => overlaps(startISO, endISO, a.startISO, a.endISO));
+
+if (taken) {
+  throw new Error("That slot was just taken. Please pick another time.");
+}
+
       createAppointment({
         customerId: c.id,
         serviceId: selectedService.id,
@@ -269,24 +279,9 @@ export default function Book() {
         <div className="uiHeader">
           <div>
             <div className="uiTitle">Book an appointment</div>
-            {/* ✅ Removed this subtitle as requested */}
             {/* <div className="uiSubtitle">Choose a service, pick a time, then confirm.</div> */}
           </div>
 
-          {/* ✅ Only admins see this */}
-          {isAuthed() && (
-            <div style={{ display: "flex", gap: 10 }}>
-              <button
-                type="button"
-                className="uiBtn"
-                onClick={() => navigate("/admin")}
-                style={{ borderRadius: 999 }}
-                title="Admin area"
-              >
-                Admin
-              </button>
-            </div>
-          )}
         </div>
 
         {/* Stepper */}

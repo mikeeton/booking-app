@@ -1,12 +1,13 @@
+// src/features/auth/ProtectedRoute.jsx
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { isAuthed } from "./authStore";
 
 export default function ProtectedRoute() {
   const location = useLocation();
 
+  // Admin auth ONLY
   if (!isAuthed()) {
-    // ✅ pass full location so Login can redirect back correctly
-    return <Navigate to="/login" replace state={{ from: location }} />;
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
 
   return <Outlet />;
