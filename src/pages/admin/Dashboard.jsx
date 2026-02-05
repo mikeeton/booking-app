@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import "../../components/ui/ui.css";
 
-import { getAdminAppointments } from "../../features/appointments/appointmentsStore";
+import { getAppointments } from "../../features/appointments/appointmentsStore";
 import { getCustomers } from "../../features/customers/customersStore";
 import { getServices } from "../../features/services/servicesStore";
 
@@ -24,7 +24,7 @@ export default function Dashboard() {
         setLoading(true);
 
         const [apptsRes, customersRes, servicesRes] = await Promise.all([
-          getAdminAppointments(),
+          getAppointments(),
           getCustomers(),
           getServices(),
         ]);
