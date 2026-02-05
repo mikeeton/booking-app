@@ -1,5 +1,6 @@
 // src/App.jsx
 import { Routes, Route, Navigate } from "react-router-dom";
+import { Analytics } from "@vercel/analytics/react";
 
 import AdminLayout from "./layouts/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
@@ -52,6 +53,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/account" replace />} />
         </Routes>
       </main>
+      <Analytics />
     </>
   );
 }
