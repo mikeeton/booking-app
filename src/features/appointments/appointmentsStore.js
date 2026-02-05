@@ -1,36 +1,57 @@
+// src/features/appointments/appointmentsStore.js
+import { api } from "../../lib/api";
+
 const KEY = "ba_appointments_v1";
-const uid = () => crypto.randomUUID?.() ?? String(Date.now() + Math.random());
 
-function read(){ return JSON.parse(localStorage.getItem(KEY) || "[]"); }
-function write(list){ localStorage.setItem(KEY, JSON.stringify(list)); return list; }
+function readCache() {
+  try {
+    return JSON.parse(localStorage.getItem(KEY) || "null") || [];
+  } catch {
+    return [];
+  }
+}
+function writeCache(list) {
+  try {
+    localStorage.setItem(KEY, JSON.stringify(list));
+  } catch {}
+  return list;
+}
 
-export function getAppointments(){ return read(); }
+// Synchronous getter for UI
+export function getAppointments() {
+  return readCache();
+}
 
-export function createAppointment(data){
-  const list = read();
+// Async fetch to refresh cache
+export async function fetchAppointments() {
+  const res = await api.get("/appointments/admin");
+  const list = Array.isArray(res.data) ? res.data : (res.data?.appointments ?? []);
+  writeCache(list);
+  return list;
+}
 
-  const item = {
-    id: uid(),
-    customerId: data.customerId,
-    serviceId: data.serviceId,
-    startISO: data.startISO,   // ISO datetime
-    endISO: data.endISO,       // ISO datetime
-    note: data.note || "",
-    status: data.status || "confirmed",
-    createdAt: new Date().toISOString(),
-  };
+export async function deleteAppointment(id) {
+  const res = await api.delete(`/appointments/admin/${id}`);
+  const list = readCache().filter((a) => a.id !== id);
+  writeCache(list);
+  return res.data;
+}
 
-  list.unshift(item);
-  write(list);
+export async function createAppointment(payload) {
+  const res = await api.post("/appointments", payload);
+  const item = res.data.appointment ?? res.data;
+  const list = [item, ...readCache()];
+  writeCache(list);
   return item;
 }
 
-export function updateAppointment(id, patch){
-  const list = read().map(a => a.id === id ? { ...a, ...patch } : a);
-  write(list);
+export async function updateAppointment(id, patch) {
+  const res = await api.patch(`/appointments/admin/${id}`, patch);
+  const item = res.data;
+  const list = readCache().map((a) => (a.id === id ? item : a));
+  writeCache(list);
+  return item;
 }
 
-export function deleteAppointment(id){
-  const list = read().filter(a => a.id !== id);
-  write(list);
-}
+// Background refresh
+fetchAppointments().catch(() => {});

@@ -1,22 +1,13 @@
 // src/features/customers/CustomerProtectedRoute.jsx
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { useCustomerAuth } from "./CustomerAuthProvider";
+import { getCustomerAuth } from "./customerAuthStore";
 
 export default function CustomerProtectedRoute() {
-  const { current } = useCustomerAuth();
-  const location = useLocation();
+  const loc = useLocation();
+  const s = getCustomerAuth();
 
-  const customer = (() => {
-    try {
-      return current?.() ?? null;
-    } catch {
-      return null;
-    }
-  })();
-
-  // Not signed in as customer → send to /account
-  if (!customer) {
-    return <Navigate to="/account" replace state={{ from: location.pathname }} />;
+  if (!s?.ok) {
+    return <Navigate to="/account" replace state={{ from: loc.pathname }} />;
   }
 
   return <Outlet />;

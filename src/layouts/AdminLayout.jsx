@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import "./adminLayout.css";
-import { clearAuth } from "../features/auth/authStore";
+import { logoutAdmin } from "../features/auth/authStore";
 
 export default function AdminLayout() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
 
   function onAdminLogout() {
-    clearAuth();
+    logoutAdmin();
     setOpen(false);
     navigate("/login", { replace: true });
   }
@@ -42,7 +42,7 @@ export default function AdminLayout() {
           </NavLink>
         </nav>
 
-        {/* ✅ Footer: logout button (and we removed "Customer booking") */}
+        {/*  Footer: logout button (and we removed "Customer booking") */}
         <div className="sidebarFooter">
           <button type="button" className="navLink" onClick={onAdminLogout}>
             Log out
@@ -52,7 +52,7 @@ export default function AdminLayout() {
 
       {open && <div className="mobileOverlay" onClick={() => setOpen(false)} aria-hidden="true" />}
 
-      <main id="main" className="adminMain">
+      <main className="adminMain">
         <button
           type="button"
           className="mobileNavToggle"

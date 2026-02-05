@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+// src/pages/admin/Services.jsx
+import { useMemo, useEffect, useState } from "react";
 import Modal from "../../components/ui/Modal";
 import "../../components/ui/ui.css";
 import { getServices, createService, updateService, deleteService } from "../../features/services/servicesStore";
@@ -10,14 +11,30 @@ export default function Services() {
 
   const [form, setForm] = useState({ name: "", durationMins: 30, price: 0, active: true });
 
-  const services = getServices();
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  async function refresh() {
+    setLoading(true);
+    try {
+      const list = await getServices();
+      setServices(list);
+    } catch (e) {
+      console.error("Failed to load services:", e);
+      alert("Failed to load services. Make sure you're logged in as admin and the API is running.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    refresh();
+  }, []);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return services;
-    return services.filter(s =>
-      (s.name || "").toLowerCase().includes(q)
-    );
+    return services.filter((s) => (s.name || "").toLowerCase().includes(q));
   }, [services, query]);
 
   function openNew() {
@@ -28,20 +45,48 @@ export default function Services() {
 
   function openEdit(s) {
     setEditing(s);
-    setForm({ name: s.name || "", durationMins: s.durationMins || 30, price: s.price || 0, active: !!s.active });
+    setForm({
+      name: s.name || "",
+      durationMins: s.durationMins || 30,
+      price: s.price || 0,
+      active: !!s.active,
+    });
     setOpen(true);
   }
 
-  function save() {
+  async function save() {
     if (!form.name.trim()) return alert("Service name is required");
-    if (editing) updateService(editing.id, form);
-    else createService(form);
-    setOpen(false);
+
+    try {
+      if (editing) await updateService(editing.id, form);
+      else await createService(form);
+
+      setOpen(false);
+      await refresh();
+    } catch (e) {
+      console.error("Save failed:", e);
+      alert("Could not save service. Check the API and your admin login.");
+    }
   }
 
-  function remove(id) {
+  async function remove(id) {
     if (!confirm("Delete this service?")) return;
-    deleteService(id);
+
+    try {
+      await deleteService(id);
+      await refresh();
+    } catch (e) {
+      console.error("Delete failed:", e);
+      alert("Could not delete service.");
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="uiPage">
+        <div className="uiCard uiCardPad">Loading services…</div>
+      </div>
+    );
   }
 
   return (
@@ -59,7 +104,9 @@ export default function Services() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
-            <button type="button" className="uiBtn uiBtnPrimary" onClick={openNew}>+ New</button>
+            <button type="button" className="uiBtn uiBtnPrimary" onClick={openNew}>
+              + New
+            </button>
           </div>
         </div>
       </div>
@@ -79,20 +126,38 @@ export default function Services() {
             <tbody>
               {filtered.map((s) => (
                 <tr key={s.id}>
-                  <td><strong>{s.name}</strong></td>
+                  <td>
+                    <strong>{s.name}</strong>
+                  </td>
                   <td>{s.durationMins} mins</td>
                   <td>£{Number(s.price).toFixed(2)}</td>
-                  <td>{s.active ? <span className="uiPill">Active</span> : <span className="uiPill" style={{background:"#fee2e2",color:"#991b1b"}}>Inactive</span>}</td>
+                  <td>
+                    {s.active ? (
+                      <span className="uiPill">Active</span>
+                    ) : (
+                      <span className="uiPill" style={{ background: "#fee2e2", color: "#991b1b" }}>
+                        Inactive
+                      </span>
+                    )}
+                  </td>
                   <td>
                     <div className="uiActions">
-                      <button type="button" className="uiBtn" onClick={() => openEdit(s)}>Edit</button>
-                      <button type="button" className="uiBtn uiBtnDanger" onClick={() => remove(s.id)}>Delete</button>
+                      <button type="button" className="uiBtn" onClick={() => openEdit(s)}>
+                        Edit
+                      </button>
+                      <button type="button" className="uiBtn uiBtnDanger" onClick={() => remove(s.id)}>
+                        Delete
+                      </button>
                     </div>
                   </td>
                 </tr>
               ))}
               {filtered.length === 0 && (
-                <tr><td colSpan="5" style={{ color: "var(--muted)", padding: 18 }}>No services found.</td></tr>
+                <tr>
+                  <td colSpan="5" style={{ color: "var(--muted)", padding: 18 }}>
+                    No services found.
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>
@@ -105,15 +170,23 @@ export default function Services() {
         onClose={() => setOpen(false)}
         footer={
           <>
-            <button type="button" className="uiBtn" onClick={() => setOpen(false)}>Cancel</button>
-            <button type="button" className="uiBtn uiBtnPrimary" onClick={save}>Save</button>
+            <button type="button" className="uiBtn" onClick={() => setOpen(false)}>
+              Cancel
+            </button>
+            <button type="button" className="uiBtn uiBtnPrimary" onClick={save}>
+              Save
+            </button>
           </>
         }
       >
         <div className="uiGrid2">
           <div>
             <div style={{ fontWeight: 800, marginBottom: 6 }}>Service name</div>
-            <input className="uiInput" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            <input
+              className="uiInput"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+            />
           </div>
 
           <div>

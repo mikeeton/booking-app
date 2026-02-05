@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Modal from "../../components/ui/Modal";
 import "../../components/ui/ui.css";
 import { getAvailability, saveAvailability } from "../../features/availability/availabilityStore";
@@ -80,7 +80,31 @@ function Toggle({ checked, onChange, label }) {
 }
 
 export default function Availability() {
-  const [data, setData] = useState(getAvailability());
+  const defaultWeek = {
+    mon: { enabled: true, start: "09:00", end: "17:00", breaks: [{ start: "12:30", end: "13:00" }] },
+    tue: { enabled: true, start: "09:00", end: "17:00", breaks: [{ start: "12:30", end: "13:00" }] },
+    wed: { enabled: true, start: "09:00", end: "17:00", breaks: [{ start: "12:30", end: "13:00" }] },
+    thu: { enabled: true, start: "09:00", end: "17:00", breaks: [{ start: "12:30", end: "13:00" }] },
+    fri: { enabled: true, start: "09:00", end: "17:00", breaks: [{ start: "12:30", end: "13:00" }] },
+    sat: { enabled: false, start: "09:00", end: "17:00", breaks: [] },
+    sun: { enabled: false, start: "09:00", end: "17:00", breaks: [] },
+  };
+
+  const [data, setData] = useState({ slotStepMins: 15, week: defaultWeek });
+  useEffect(() => {
+    let mounted = true;
+    getAvailability()
+      .then((d) => {
+        if (!mounted) return;
+        // normalize returned shape: api returns { slotStepMins, byDay }
+        const week = d?.byDay || d?.week || defaultWeek;
+        setData({ slotStepMins: d?.slotStepMins ?? 15, week });
+      })
+      .catch(() => {
+        // keep defaults on error
+      });
+    return () => (mounted = false);
+  }, []);
   const [openBreaks, setOpenBreaks] = useState(null); // dayKey
   const [savedMessage, setSavedMessage] = useState("");
 
@@ -114,10 +138,17 @@ export default function Availability() {
     updateDay(dayKey, { breaks: next });
   }
 
-  function save() {
-    saveAvailability(data);
-    setSavedMessage("Saved ✅");
-    setTimeout(() => setSavedMessage(""), 2500);
+  async function save() {
+    try {
+      const saved = await saveAvailability({ slotStepMins: data.slotStepMins, byDay: data.week });
+      // normalize returned value
+      setData({ slotStepMins: saved?.slotStepMins ?? data.slotStepMins, week: saved?.byDay || data.week });
+      setSavedMessage("Saved ✅");
+      setTimeout(() => setSavedMessage(""), 2500);
+    } catch (e) {
+      setSavedMessage("Save failed");
+      setTimeout(() => setSavedMessage(""), 2500);
+    }
   }
 
   return (

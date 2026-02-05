@@ -23,32 +23,35 @@ export default function App() {
         Skip to main content
       </a>
 
-      <Routes>
-        <Route path="/" element={<Navigate to="/account" replace />} />
+      {/* ✅ One global main landmark for the whole app */}
+      <main id="main">
+        <Routes>
+          <Route path="/" element={<Navigate to="/account" replace />} />
 
-        {/* Public */}
-        <Route path="/account" element={<Account />} />
-        <Route path="/login" element={<Login />} />
+          {/* Public */}
+          <Route path="/account" element={<Account />} />
+          <Route path="/login" element={<Login />} />
 
-        {/* ✅ Customer protected area */}
-        <Route element={<CustomerProtectedRoute />}>
-          <Route path="/book" element={<Book />} />
-          <Route path="/my-bookings" element={<MyBookings />} />
-        </Route>
-
-        {/* ✅ Protected Admin */}
-        <Route element={<ProtectedRoute />}>
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="services" element={<Services />} />
-            <Route path="customers" element={<Customers />} />
-            <Route path="appointments" element={<Appointments />} />
-            <Route path="availability" element={<Availability />} />
+          {/* Customer protected */}
+          <Route element={<CustomerProtectedRoute />}>
+            <Route path="/book" element={<Book />} />
+            <Route path="/my-bookings" element={<MyBookings />} />
           </Route>
-        </Route>
 
-        <Route path="*" element={<Navigate to="/account" replace />} />
-      </Routes>
+          {/* Admin protected */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<Dashboard />} />
+              <Route path="services" element={<Services />} />
+              <Route path="customers" element={<Customers />} />
+              <Route path="appointments" element={<Appointments />} />
+              <Route path="availability" element={<Availability />} />
+            </Route>
+          </Route>
+
+          <Route path="*" element={<Navigate to="/account" replace />} />
+        </Routes>
+      </main>
     </>
   );
 }

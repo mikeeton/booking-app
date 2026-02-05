@@ -1,32 +1,78 @@
+import { useEffect, useMemo, useState } from "react";
 import "../../components/ui/ui.css";
-import { getAppointments } from "../../features/appointments/appointmentsStore";
+
+import { getAdminAppointments } from "../../features/appointments/appointmentsStore";
 import { getCustomers } from "../../features/customers/customersStore";
 import { getServices } from "../../features/services/servicesStore";
 
-import { PieChart, Pie, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
+import {
+  PieChart, Pie, Tooltip, Legend,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer
+} from "recharts";
 
 export default function Dashboard() {
-  const appts = getAppointments();
-  const customers = getCustomers();
-  const services = getServices();
+  const [appts, setAppts] = useState([]);
+  const [customers, setCustomers] = useState([]);
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const serviceMap = Object.fromEntries(services.map(s => [s.id, s]));
+  useEffect(() => {
+    let alive = true;
 
-  // Pie: appointments by service
-  const pieData = services.map(s => ({
-    name: s.name,
-    value: appts.filter(a => a.serviceId === s.id).length,
-  })).filter(x => x.value > 0);
+    (async () => {
+      try {
+        setLoading(true);
 
-  // Bar: appointments per day (last 7)
-  const today = new Date();
-  const days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(today);
-    d.setDate(today.getDate() - (6 - i));
-    const key = d.toISOString().slice(0,10);
-    const count = appts.filter(a => new Date(a.startISO).toISOString().slice(0,10) === key).length;
-    return { day: d.toLocaleDateString([], { weekday: "short" }), count };
-  });
+        const [apptsRes, customersRes, servicesRes] = await Promise.all([
+          getAdminAppointments(),
+          getCustomers(),
+          getServices(),
+        ]);
+
+        if (!alive) return;
+
+        setAppts(apptsRes?.appointments ?? []);
+        setCustomers(customersRes?.customers ?? customersRes ?? []);
+        setServices(servicesRes?.services ?? servicesRes ?? []);
+      } catch (e) {
+        console.error("Dashboard load failed:", e);
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+
+    return () => { alive = false; };
+  }, []);
+
+  const pieData = useMemo(() => {
+    return services
+      .map((s) => ({
+        name: s.name,
+        value: appts.filter((a) => a.serviceId === s.id).length,
+      }))
+      .filter((x) => x.value > 0);
+  }, [services, appts]);
+
+  const days = useMemo(() => {
+    const today = new Date();
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(today);
+      d.setDate(today.getDate() - (6 - i));
+      const key = d.toISOString().slice(0, 10);
+      const count = appts.filter(
+        (a) => new Date(a.startISO).toISOString().slice(0, 10) === key
+      ).length;
+      return { day: d.toLocaleDateString([], { weekday: "short" }), count };
+    });
+  }, [appts]);
+
+  if (loading) {
+    return (
+      <div className="uiPage">
+        <div className="uiCard uiCardPad">Loading dashboard…</div>
+      </div>
+    );
+  }
 
   return (
     <div className="uiPage">
@@ -60,7 +106,11 @@ export default function Dashboard() {
               <Legend />
             </PieChart>
           </ResponsiveContainer>
-          {pieData.length === 0 && <div style={{ color: "var(--muted)" }}>No data yet — create services + appointments.</div>}
+          {pieData.length === 0 && (
+            <div style={{ color: "var(--muted)" }}>
+              No data yet — create services + appointments.
+            </div>
+          )}
         </div>
 
         <div className="uiCard uiCardPad" style={{ height: 340 }}>

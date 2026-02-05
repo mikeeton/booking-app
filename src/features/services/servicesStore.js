@@ -1,32 +1,82 @@
+// src/features/services/servicesStore.js
+import { api } from "../../lib/api";
+
 const KEY = "ba_services_v1";
-const uid = () => crypto.randomUUID?.() ?? String(Date.now() + Math.random());
 
-function read() { return JSON.parse(localStorage.getItem(KEY) || "[]"); }
-function write(list) { localStorage.setItem(KEY, JSON.stringify(list)); return list; }
+function readCache() {
+  try {
+    return JSON.parse(localStorage.getItem(KEY) || "null") || [];
+  } catch {
+    return [];
+  }
+}
+function writeCache(list) {
+  try {
+    localStorage.setItem(KEY, JSON.stringify(list));
+  } catch {}
+  return list;
+}
 
-export function getServices(){ return read(); }
+function unwrapList(resData) {
+  return Array.isArray(resData) ? resData : (resData?.services ?? []);
+}
 
-export function createService(data){
-  const list = read();
-  const item = {
-    id: uid(),
-    name: data.name?.trim(),
-    durationMins: Number(data.durationMins) || 30,
-    price: Number(data.price) || 0,
-    active: data.active ?? true,
-    createdAt: new Date().toISOString(),
+function toUI(s) {
+  return {
+    id: s.id,
+    name: s.name,
+    price: typeof s.price === "number" ? s.price : (Number(s.pricePence || 0) / 100),
+    durationMins: Number(s.durationMins || 30),
+    active: s.active ?? true,
   };
-  list.unshift(item);
-  write(list);
+}
+
+// Synchronous getter used throughout the UI (returns cached list)
+export function getServices() {
+  return readCache();
+}
+
+// Async: fetch latest services from API and update cache
+export async function fetchServices() {
+  const res = await api.get("/services");
+  const list = unwrapList(res.data).map(toUI);
+  writeCache(list);
+  return list;
+}
+
+// Admin operations (keep same behaviour but update cache when possible)
+export async function createService(form) {
+  const payload = {
+    name: form.name,
+    durationMins: Number(form.durationMins || 30),
+    pricePence: Math.round(Number(form.price || 0) * 100),
+  };
+  const res = await api.post("/services/admin", payload);
+  const item = toUI(res.data);
+  const list = [item, ...readCache()];
+  writeCache(list);
   return item;
 }
 
-export function updateService(id, patch){
-  const list = read().map(s => s.id === id ? { ...s, ...patch } : s);
-  write(list);
+export async function updateService(id, form) {
+  const patch = {
+    name: form.name,
+    durationMins: Number(form.durationMins || 30),
+    pricePence: Math.round(Number(form.price || 0) * 100),
+  };
+  const res = await api.patch(`/services/admin/${id}`, patch);
+  const item = toUI(res.data);
+  const list = readCache().map((s) => (s.id === id ? item : s));
+  writeCache(list);
+  return item;
 }
 
-export function deleteService(id){
-  const list = read().filter(s => s.id !== id);
-  write(list);
+export async function deleteService(id) {
+  const res = await api.delete(`/services/admin/${id}`);
+  const list = readCache().filter((s) => s.id !== id);
+  writeCache(list);
+  return res.data;
 }
+
+// Kick off a background refresh when module loads
+fetchServices().catch(() => {});

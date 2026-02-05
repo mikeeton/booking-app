@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+// src/pages/admin/Appointments.jsx
+import { useMemo, useState, useEffect } from "react";
 import Modal from "../../components/ui/Modal";
 import "../../components/ui/ui.css";
 
@@ -49,9 +50,31 @@ export default function Appointments() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(null);
 
+  // Customers are currently localStorage-based (sync)
   const customers = getCustomers();
-  const services = getServices();
-  const appointments = getAppointments();
+
+  // Services + appointments are API-based (async)
+  const [services, setServices] = useState([]);
+  const [appointments, setAppointments] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  async function refresh() {
+    setLoading(true);
+    try {
+      const [svc, appt] = await Promise.all([getServices(), getAppointments()]);
+      setServices(svc);
+      setAppointments(appt);
+    } catch (e) {
+      console.error("Failed to load appointments/services:", e);
+      alert("Failed to load data. Make sure you're logged in as admin and the API is running.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    refresh();
+  }, []);
 
   const customerMap = useMemo(
     () => Object.fromEntries(customers.map((c) => [c.id, c])),
@@ -113,7 +136,7 @@ export default function Appointments() {
     setOpen(true);
   }
 
-  function save() {
+  async function save() {
     if (!form.customerId) return alert("Choose a customer");
     if (!form.serviceId) return alert("Choose a service");
 
@@ -130,15 +153,28 @@ export default function Appointments() {
       status: form.status,
     };
 
-    if (editing) updateAppointment(editing.id, payload);
-    else createAppointment(payload);
+    try {
+      if (editing) await updateAppointment(editing.id, payload);
+      else await createAppointment(payload);
 
-    setOpen(false);
+      setOpen(false);
+      await refresh();
+    } catch (e) {
+      console.error("Save failed:", e);
+      alert("Could not save appointment. (Admin create/update may not be enabled on backend yet.)");
+    }
   }
 
-  function remove(id) {
+  async function remove(id) {
     if (!confirm("Delete this appointment?")) return;
-    deleteAppointment(id);
+
+    try {
+      await deleteAppointment(id);
+      await refresh();
+    } catch (e) {
+      console.error("Delete failed:", e);
+      alert("Could not delete appointment.");
+    }
   }
 
   const filtered = useMemo(() => {
@@ -187,15 +223,21 @@ export default function Appointments() {
     });
   }, [appointments, weekStart, weekEnd]);
 
+  if (loading) {
+    return (
+      <div className="uiPage">
+        <div className="uiCard uiCardPad">Loading appointments…</div>
+      </div>
+    );
+  }
+
   return (
     <div className="uiPage">
       <div className="uiCard uiCardPad">
         <div className="uiHeader">
           <div>
             <div className="uiTitle">Appointments</div>
-            <div className="uiSubtitle">
-              Manage bookings + switch between list and week view.
-            </div>
+            <div className="uiSubtitle">Manage bookings + switch between list and week view.</div>
           </div>
 
           <div className="uiToolbar">
@@ -259,11 +301,7 @@ export default function Appointments() {
                           <button type="button" className="uiBtn" onClick={() => openEdit(a)}>
                             Edit
                           </button>
-                          <button
-                            type="button"
-                            className="uiBtn uiBtnDanger"
-                            onClick={() => remove(a.id)}
-                          >
+                          <button type="button" className="uiBtn uiBtnDanger" onClick={() => remove(a.id)}>
                             Delete
                           </button>
                         </div>
@@ -273,10 +311,7 @@ export default function Appointments() {
                 })}
                 {filtered.length === 0 && (
                   <tr>
-                    <td
-                      colSpan="6"
-                      style={{ color: "var(--muted)", padding: 18 }}
-                    >
+                    <td colSpan="6" style={{ color: "var(--muted)", padding: 18 }}>
                       No appointments found.
                     </td>
                   </tr>
@@ -318,9 +353,7 @@ export default function Appointments() {
             <select
               className="uiSelect"
               value={form.customerId}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, customerId: e.target.value }))
-              }
+              onChange={(e) => setForm((f) => ({ ...f, customerId: e.target.value }))}
             >
               <option value="">Select…</option>
               {customers.map((c) => (
@@ -336,9 +369,7 @@ export default function Appointments() {
             <select
               className="uiSelect"
               value={form.serviceId}
-              onChange={(e) =>
-                setForm((f) => recomputeEnd({ ...f, serviceId: e.target.value }))
-              }
+              onChange={(e) => setForm((f) => recomputeEnd({ ...f, serviceId: e.target.value }))}
             >
               <option value="">Select…</option>
               {services.map((s) => (
@@ -355,9 +386,7 @@ export default function Appointments() {
               className="uiInput"
               type="date"
               value={form.date}
-              onChange={(e) =>
-                setForm((f) => recomputeEnd({ ...f, date: e.target.value }))
-              }
+              onChange={(e) => setForm((f) => recomputeEnd({ ...f, date: e.target.value }))}
             />
           </div>
 
@@ -367,21 +396,13 @@ export default function Appointments() {
               className="uiInput"
               type="time"
               value={form.time}
-              onChange={(e) =>
-                setForm((f) => recomputeEnd({ ...f, time: e.target.value }))
-              }
+              onChange={(e) => setForm((f) => recomputeEnd({ ...f, time: e.target.value }))}
             />
           </div>
 
           <div>
-            <div style={{ fontWeight: 800, marginBottom: 6 }}>
-              End time (auto)
-            </div>
-            <input
-              className="uiInput"
-              value={form.endISO ? fmtTime(form.endISO) : ""}
-              disabled
-            />
+            <div style={{ fontWeight: 800, marginBottom: 6 }}>End time (auto)</div>
+            <input className="uiInput" value={form.endISO ? fmtTime(form.endISO) : ""} disabled />
           </div>
 
           <div>
@@ -389,9 +410,7 @@ export default function Appointments() {
             <select
               className="uiSelect"
               value={form.status}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, status: e.target.value }))
-              }
+              onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}
             >
               <option value="confirmed">confirmed</option>
               <option value="pending">pending</option>
@@ -413,33 +432,20 @@ export default function Appointments() {
   );
 }
 
-function WeekView({
-  weekDays,
-  appointments,
-  customerMap,
-  serviceMap,
-  onPrev,
-  onNext,
-  onOpenEdit,
-}) {
-  // You can change these if you want longer working days:
+function WeekView({ weekDays, appointments, customerMap, serviceMap, onPrev, onNext, onOpenEdit }) {
   const START_HOUR = 8;
-  const END_HOUR = 18; // inclusive hours shown (8..18)
+  const END_HOUR = 18;
   const hours = Array.from({ length: END_HOUR - START_HOUR + 1 }, (_, i) => i + START_HOUR);
 
-  // Group by day+hour for quick rendering
   const byDayHour = useMemo(() => {
-    const map = {}; // key = `${yyyy-mm-dd}-${hour}` -> array
+    const map = {};
     for (const a of appointments) {
       const d = new Date(a.startISO);
       const key = `${d.toISOString().slice(0, 10)}-${d.getHours()}`;
       map[key] ||= [];
       map[key].push(a);
     }
-    // sort each bucket by start
-    Object.values(map).forEach((arr) =>
-      arr.sort((x, y) => new Date(x.startISO) - new Date(y.startISO))
-    );
+    Object.values(map).forEach((arr) => arr.sort((x, y) => new Date(x.startISO) - new Date(y.startISO)));
     return map;
   }, [appointments]);
 
@@ -447,32 +453,10 @@ function WeekView({
     return byDayHour[`${dateISO}-${hour}`] || [];
   }
 
-  // Styles (inline so you don't need to edit css files)
-  const shell = {
-    border: "1px solid var(--border)",
-    borderRadius: 16,
-    background: "#fff",
-    overflow: "hidden",
-  };
-
-  const scroller = {
-    overflow: "auto",
-    maxHeight: "calc(100vh - 260px)",
-  };
-
-  const grid = {
-    minWidth: 1040,
-    display: "grid",
-    gridTemplateColumns: "110px repeat(7, 1fr)",
-  };
-
-  const topHeader = {
-    position: "sticky",
-    top: 0,
-    zIndex: 5,
-    background: "var(--panel-2)",
-    borderBottom: "1px solid var(--border)",
-  };
+  const shell = { border: "1px solid var(--border)", borderRadius: 16, background: "#fff", overflow: "hidden" };
+  const scroller = { overflow: "auto", maxHeight: "calc(100vh - 260px)" };
+  const grid = { minWidth: 1040, display: "grid", gridTemplateColumns: "110px repeat(7, 1fr)" };
+  const topHeader = { position: "sticky", top: 0, zIndex: 5, background: "var(--panel-2)", borderBottom: "1px solid var(--border)" };
 
   const timeHeaderCell = {
     position: "sticky",
@@ -486,10 +470,7 @@ function WeekView({
     fontSize: 12,
   };
 
-  const dayHeaderCell = {
-    padding: 12,
-    borderLeft: "1px solid var(--border)",
-  };
+  const dayHeaderCell = { padding: 12, borderLeft: "1px solid var(--border)" };
 
   const stickyTimeCell = {
     position: "sticky",
@@ -534,31 +515,23 @@ function WeekView({
           <div className="uiSubtitle">Click an appointment to edit.</div>
         </div>
         <div className="uiToolbar">
-          <button type="button" className="uiBtn" onClick={onPrev}>
-            ← Prev
-          </button>
-          <button type="button" className="uiBtn" onClick={onNext}>
-            Next →
-          </button>
+          <button type="button" className="uiBtn" onClick={onPrev}>← Prev</button>
+          <button type="button" className="uiBtn" onClick={onNext}>Next →</button>
         </div>
       </div>
 
       <div style={shell}>
         <div style={scroller}>
-          {/* Sticky header */}
           <div style={{ ...grid, ...topHeader }}>
             <div style={timeHeaderCell}>Time</div>
             {weekDays.map((d) => (
               <div key={d.toISOString()} style={dayHeaderCell}>
                 <div style={{ fontWeight: 950, fontSize: 14 }}>{shortDay(d)}</div>
-                <div style={{ color: "var(--muted)", fontSize: 12, fontWeight: 700 }}>
-                  {shortMD(d)}
-                </div>
+                <div style={{ color: "var(--muted)", fontSize: 12, fontWeight: 700 }}>{shortMD(d)}</div>
               </div>
             ))}
           </div>
 
-          {/* Body */}
           <div style={grid}>
             {hours.map((h) => (
               <FragmentRow
@@ -584,20 +557,7 @@ function WeekView({
   );
 }
 
-function FragmentRow({
-  hour,
-  weekDays,
-  stickyTimeCell,
-  slotCell,
-  bucket,
-  customerMap,
-  serviceMap,
-  onOpenEdit,
-  chip,
-  chipTime,
-  chipTitle,
-  chipSub,
-}) {
+function FragmentRow({ hour, weekDays, stickyTimeCell, slotCell, bucket, customerMap, serviceMap, onOpenEdit, chip, chipTime, chipTitle, chipSub }) {
   const label = `${String(hour).padStart(2, "0")}:00`;
 
   return (
@@ -623,9 +583,7 @@ function FragmentRow({
                       style={chip}
                       title="Click to edit"
                     >
-                      <div style={chipTime}>
-                        {fmtTime(a.startISO)}–{fmtTime(a.endISO)}
-                      </div>
+                      <div style={chipTime}>{fmtTime(a.startISO)}–{fmtTime(a.endISO)}</div>
                       <div style={chipTitle}>{c?.name || "Unknown"}</div>
                       <div style={chipSub}>{s?.name || "Unknown"}</div>
                     </div>
@@ -633,14 +591,7 @@ function FragmentRow({
                 })}
 
                 {items.length > 2 && (
-                  <div
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 800,
-                      color: "var(--muted)",
-                      paddingLeft: 2,
-                    }}
-                  >
+                  <div style={{ fontSize: 12, fontWeight: 800, color: "var(--muted)", paddingLeft: 2 }}>
                     +{items.length - 2} more…
                   </div>
                 )}

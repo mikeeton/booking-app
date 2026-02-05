@@ -1,3 +1,4 @@
+// src/features/customers/CustomerAuthProvider.jsx
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import {
   loginCustomer,
@@ -16,8 +17,8 @@ export function CustomerAuthProvider({ children }) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    function onStorage(e) {
-      if (e.key) setAuthState(getCustomerAuth());
+    function onStorage() {
+      setAuthState(getCustomerAuth());
     }
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
